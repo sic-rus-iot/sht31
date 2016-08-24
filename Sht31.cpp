@@ -18,8 +18,7 @@
 #include "mbed.h"
 
 Sht31::Sht31(PinName sda, PinName scl) : _i2c(sda, scl) {
-    _i2caddr = 0x44;
-     printf("\r\n");
+    _i2caddr = (0x44 << 1);
     reset();
     readStatus();
 }
@@ -35,37 +34,28 @@ float Sht31::readHumidity(void) {
 }
 
 void Sht31::reset(void) {
-    _i2c.start();
-    _i2c.write(SHT31_SOFTRESET);
-    _i2c.stop();
+    writeCommand(SHT31_SOFTRESET);
     wait_ms(10);
 }
 
 uint16_t Sht31::readStatus(void) {
     writeCommand(SHT31_READSTATUS);
     char val[1];
-    _i2c.start();
     _i2c.read(_i2caddr, val, 1);
-    _i2c.stop();
     uint16_t stat = val[0];
     stat <<= 8;
-    _i2c.start();
     _i2c.read(_i2caddr, val, 1);
-    _i2c.stop();
     stat |= val[0];
-    printf("0x%X\r\n", stat);
+    // printf("0x%X\r\n", stat);
     return stat;
 }
 
 void Sht31::writeCommand(uint16_t cmd) {
     char buf[2];
-    _i2c.start();
     buf[0] = (cmd >> 8);
     buf[1] = (cmd & 0xFF);
     _i2c.write(_i2caddr, buf, 2);
-    _i2c.stop();
 }
-
 
 bool Sht31::readTempHum(void) {
     char readbuffer[6];
@@ -73,12 +63,10 @@ bool Sht31::readTempHum(void) {
     writeCommand(SHT31_MEAS_HIGHREP);
 
     wait_ms(500);
-    _i2c.start();
     _i2c.read(_i2caddr, readbuffer, 6);
-    _i2c.stop();
-     for (uint8_t i = 0; i < 6; i++) {
-         printf("0x%Xd\r\n", readbuffer[i]);
-     }
+    // for (uint8_t i = 0; i < 6; i++) {
+    //     printf("0x%Xd\r\n", readbuffer[i]);
+    // }
     uint16_t ST, SRH;
     ST = readbuffer[0];
     ST <<= 8;
@@ -96,14 +84,14 @@ bool Sht31::readTempHum(void) {
         return false;
     }
 
-    printf("ST = %d\r\n", ST);
+    // printf("ST = %d\r\n", ST);
     double stemp = ST;
     stemp *= 175;
     stemp /= 0xffff;
     stemp = -45 + stemp;
     temp = stemp;
 
-    printf("SRH = %d\r\n", SRH);
+    // printf("SRH = %d\r\n", SRH);
     double shum = SRH;
     shum *= 100;
     shum /= 0xFFFF;
