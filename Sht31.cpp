@@ -35,7 +35,7 @@ float Sht31::readHumidity(void) {
 
 void Sht31::reset(void) {
     writeCommand(SHT31_SOFTRESET);
-    wait_ms(10);
+    ThisThread::sleep_for(10ms);
 }
 
 uint16_t Sht31::readStatus(void) {
@@ -62,7 +62,7 @@ bool Sht31::readTempHum(void) {
 
     writeCommand(SHT31_MEAS_HIGHREP);
 
-    wait_ms(500);
+    ThisThread::sleep_for(500ms);
     _i2c.read(_i2caddr, readbuffer, 6);
     // for (uint8_t i = 0; i < 6; i++) {
     //     printf("0x%Xd\r\n", readbuffer[i]);
